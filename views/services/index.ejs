@@ -1,0 +1,79 @@
+<!-- Search & Filter Bar -->
+<div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm mb-6">
+  <div class="flex flex-col md:flex-row gap-3 items-center justify-between">
+    <form method="GET" class="flex flex-col md:flex-row gap-2 flex-1">
+      <input type="text" name="search" value="<%= search %>" placeholder="Cari nama, token, unit, HP..." class="px-4 py-2.5 border border-slate-300 rounded-xl text-sm flex-1 focus:ring-2 focus:ring-blue-500">
+      <select name="status" class="px-4 py-2.5 border border-slate-300 rounded-xl text-sm">
+        <option value="">Semua Status</option>
+        <option value="Diterima" <%= status === 'Diterima' ? 'selected' : '' %>>Diterima</option>
+        <option value="Diagnosa" <%= status === 'Diagnosa' ? 'selected' : '' %>>Diagnosa</option>
+        <option value="Menunggu Sparepart" <%= status === 'Menunggu Sparepart' ? 'selected' : '' %>>Menunggu Sparepart</option>
+        <option value="Selesai" <%= status === 'Selesai' ? 'selected' : '' %>>Selesai</option>
+        <option value="Dibatalkan" <%= status === 'Dibatalkan' ? 'selected' : '' %>>Dibatalkan</option>
+      </select>
+      <button type="submit" class="px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-colors">
+        <i data-lucide="search" class="w-4 h-4 inline"></i> Cari
+      </button>
+    </form>
+    <a href="/services/new" class="px-4 py-2.5 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-700 transition-colors flex items-center gap-2">
+      <i data-lucide="plus" class="w-4 h-4"></i> Servis Baru
+    </a>
+  </div>
+</div>
+
+<!-- Services List -->
+<div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full">
+      <thead class="bg-slate-50 border-b border-slate-200">
+        <tr>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 uppercase">Token</th>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 uppercase">Pelanggan</th>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 uppercase hidden md:table-cell">Unit</th>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 uppercase">Status</th>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 uppercase hidden md:table-cell">Estimasi</th>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 uppercase hidden md:table-cell">Bayar</th>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 uppercase hidden lg:table-cell">Tanggal</th>
+          <th class="px-4 py-3 text-center text-xs font-bold text-slate-600 uppercase">Aksi</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        <% if (services.length === 0) { %>
+          <tr><td colspan="8" class="px-4 py-8 text-center text-slate-500">Belum ada data servis</td></tr>
+        <% } %>
+        <% services.forEach(svc => { %>
+          <tr class="hover:bg-slate-50 transition-colors">
+            <td class="px-4 py-3">
+              <span class="font-mono font-bold text-blue-600 text-sm"><%= svc.token %></span>
+            </td>
+            <td class="px-4 py-3">
+              <p class="font-semibold text-sm text-slate-800"><%= svc.customer_name %></p>
+              <p class="text-xs text-slate-500"><%= svc.phone || '-' %></p>
+            </td>
+            <td class="px-4 py-3 hidden md:table-cell text-sm text-slate-600"><%= svc.unit_type || '-' %></td>
+            <td class="px-4 py-3">
+              <span class="px-2 py-1 rounded-full text-xs font-bold <%= statusColor(svc.status) %>"><%= svc.status %></span>
+            </td>
+            <td class="px-4 py-3 hidden md:table-cell text-sm font-semibold text-slate-800"><%= formatCurrency(svc.cost_estimate) %></td>
+            <td class="px-4 py-3 hidden md:table-cell">
+              <span class="px-2 py-1 rounded-full text-xs font-bold <%= statusColor(svc.payment_status) %>"><%= svc.payment_status %></span>
+            </td>
+            <td class="px-4 py-3 hidden lg:table-cell text-xs text-slate-500"><%= formatDate(svc.created_at) %></td>
+            <td class="px-4 py-3 text-center">
+              <div class="flex justify-center gap-1">
+                <a href="/services/<%= svc.id %>" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Detail">
+                  <i data-lucide="eye" class="w-4 h-4"></i>
+                </a>
+                <a href="/services/<%= svc.id %>/edit" class="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors" title="Edit">
+                  <i data-lucide="pencil" class="w-4 h-4"></i>
+                </a>
+              </div>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<%- include('../partials/pagination') %>

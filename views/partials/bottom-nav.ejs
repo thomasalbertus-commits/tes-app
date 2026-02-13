@@ -1,0 +1,18 @@
+<%
+  const bottomItems = [
+    { href: '/dashboard', icon: 'layout-dashboard', label: 'Home' },
+    { href: '/services', icon: 'wrench', label: 'Servis' },
+    { href: '/sales', icon: 'shopping-cart', label: 'Jual' },
+    { href: '/inventory', icon: 'boxes', label: 'Stok' },
+    { href: '/finance', icon: 'bar-chart-3', label: 'Keuangan' }
+  ];
+%>
+
+<nav class="bottom-nav no-print">
+  <% bottomItems.forEach(item => { %>
+    <a href="<%= item.href %>" class="bottom-nav-item <%= currentPath.startsWith(item.href) ? 'active' : '' %>">
+      <i data-lucide="<%= item.icon %>"></i>
+      <span><%= item.label %></span>
+    </a>
+  <% }) %>
+</nav>

@@ -1,0 +1,47 @@
+<!-- Sales List -->
+<div class="flex justify-between items-center mb-6">
+  <p class="text-sm text-slate-500"><%= sales.length %> transaksi</p>
+  <a href="/sales/new" class="px-4 py-2.5 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-700 transition-colors flex items-center gap-2">
+    <i data-lucide="plus" class="w-4 h-4"></i> Penjualan Baru
+  </a>
+</div>
+
+<div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full">
+      <thead class="bg-slate-50 border-b border-slate-200">
+        <tr>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 uppercase">#ID</th>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 uppercase">Pelanggan</th>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 uppercase hidden md:table-cell">Metode</th>
+          <th class="px-4 py-3 text-right text-xs font-bold text-slate-600 uppercase">Total</th>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 uppercase hidden md:table-cell">Tanggal</th>
+          <th class="px-4 py-3 text-center text-xs font-bold text-slate-600 uppercase">Aksi</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        <% if (sales.length === 0) { %>
+          <tr><td colspan="6" class="px-4 py-8 text-center text-slate-500">Belum ada penjualan</td></tr>
+        <% } %>
+        <% sales.forEach(sale => { %>
+          <tr class="hover:bg-slate-50">
+            <td class="px-4 py-3 font-mono font-bold text-blue-600 text-sm">#<%= sale.id %></td>
+            <td class="px-4 py-3 text-sm font-semibold"><%= sale.customer_name || 'Umum' %></td>
+            <td class="px-4 py-3 text-sm capitalize hidden md:table-cell"><%= sale.payment_method %></td>
+            <td class="px-4 py-3 text-sm font-bold text-right text-green-700"><%= formatCurrency(sale.total) %></td>
+            <td class="px-4 py-3 text-xs text-slate-500 hidden md:table-cell"><%= formatDate(sale.created_at) %></td>
+            <td class="px-4 py-3 text-center">
+              <div class="flex justify-center gap-1">
+                <a href="/sales/<%= sale.id %>" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg" title="Detail"><i data-lucide="eye" class="w-4 h-4"></i></a>
+                <form method="POST" action="/sales/<%= sale.id %>/delete" onsubmit="return confirm('Yakin hapus?')" class="inline">
+                  <button class="p-2 text-red-600 hover:bg-red-50 rounded-lg" title="Hapus"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<%- include('../partials/pagination') %>

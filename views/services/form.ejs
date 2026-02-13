@@ -1,0 +1,232 @@
+<form method="POST" action="/services<%= isEdit ? '/' + service.id : '' %>" id="serviceForm">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Left Column: Customer & Unit Info -->
+    <div class="space-y-6">
+      <!-- Pelanggan -->
+      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+        <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="user" class="w-5 h-5 text-blue-600"></i> Data Pelanggan</h3>
+        <div class="space-y-3">
+          <div>
+            <label class="block text-sm font-semibold text-slate-600 mb-1">Nama Pelanggan *</label>
+            <input type="text" name="customer_name" value="<%= isEdit ? service.customer_name : '' %>" required list="customerList" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500">
+            <datalist id="customerList">
+              <% customers.forEach(c => { %><option value="<%= c.name %>"><% }) %>
+            </datalist>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-slate-600 mb-1">No. HP</label>
+            <input type="text" name="phone" value="<%= isEdit ? service.phone : '' %>" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm">
+          </div>
+        </div>
+      </div>
+
+      <!-- Unit -->
+      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+        <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="smartphone" class="w-5 h-5 text-purple-600"></i> Data Unit</h3>
+        <div class="space-y-3">
+          <div>
+            <label class="block text-sm font-semibold text-slate-600 mb-1">Tipe Unit</label>
+            <input type="text" name="unit_type" value="<%= isEdit ? service.unit_type : '' %>" placeholder="cth: iPhone 12 Pro Max" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-slate-600 mb-1">Keluhan</label>
+            <textarea name="complaint" rows="3" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm"><%= isEdit ? service.complaint : '' %></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Teknisi -->
+      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+        <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="wrench" class="w-5 h-5 text-green-600"></i> Penugasan</h3>
+        <div class="space-y-3">
+          <div>
+            <label class="block text-sm font-semibold text-slate-600 mb-1">Teknisi</label>
+            <select name="technician" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm">
+              <option value="">-- Pilih Teknisi --</option>
+              <% technicians.forEach(t => { %>
+                <option value="<%= t.name %>" <%= isEdit && service.technician === t.name ? 'selected' : '' %>><%= t.name %></option>
+              <% }) %>
+            </select>
+          </div>
+          <% if (isEdit) { %>
+          <div>
+            <label class="block text-sm font-semibold text-slate-600 mb-1">Status</label>
+            <select name="status" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm">
+              <% ['Diterima','Diagnosa','Menunggu Sparepart','Selesai','Dibatalkan'].forEach(s => { %>
+                <option value="<%= s %>" <%= service.status === s ? 'selected' : '' %>><%= s %></option>
+              <% }) %>
+            </select>
+          </div>
+          <% } %>
+          <div>
+            <label class="block text-sm font-semibold text-slate-600 mb-1">Garansi</label>
+            <input type="text" name="warranty" value="<%= isEdit ? service.warranty : '' %>" placeholder="cth: 3 Bulan" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-slate-600 mb-1">Catatan</label>
+            <textarea name="notes" rows="2" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm"><%= isEdit ? service.notes : '' %></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Pricing, Parts, Checklist -->
+    <div class="space-y-6">
+      <!-- Biaya -->
+      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+        <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="banknote" class="w-5 h-5 text-emerald-600"></i> Biaya & Pembayaran</h3>
+        <div class="space-y-3">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-sm font-semibold text-slate-600 mb-1">Estimasi Biaya</label>
+              <input type="number" name="cost_estimate" value="<%= isEdit ? service.cost_estimate : '' %>" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm">
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-slate-600 mb-1">DP</label>
+              <input type="number" name="dp" value="<%= isEdit ? service.dp : '' %>" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm">
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-slate-600 mb-1">Biaya Jasa Servis</label>
+            <input type="number" name="service_fee" value="<%= isEdit ? service.service_fee : '' %>" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm">
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-sm font-semibold text-slate-600 mb-1">Status Bayar</label>
+              <select name="payment_status" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm">
+                <% ['Belum Bayar','DP','Lunas'].forEach(s => { %>
+                  <option value="<%= s %>" <%= isEdit && service.payment_status === s ? 'selected' : '' %>><%= s %></option>
+                <% }) %>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-slate-600 mb-1">Metode</label>
+              <select name="payment_method" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm">
+                <option value="">-- Pilih --</option>
+                <% ['cash','transfer','ewallet'].forEach(m => { %>
+                  <option value="<%= m %>" <%= isEdit && service.payment_method === m ? 'selected' : '' %>><%= m.charAt(0).toUpperCase() + m.slice(1) %></option>
+                <% }) %>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-slate-600 mb-1">Akun Kas</label>
+            <select name="cash_account_id" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm">
+              <option value="">-- Tidak Ada --</option>
+              <% cashAccounts.forEach(a => { %>
+                <option value="<%= a.id %>" <%= isEdit && service.cash_account_id == a.id ? 'selected' : '' %>><%= a.name %></option>
+              <% }) %>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sparepart -->
+      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-bold text-slate-800 flex items-center gap-2"><i data-lucide="package" class="w-5 h-5 text-orange-600"></i> Sparepart</h3>
+          <button type="button" onclick="addPart()" class="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700">+ Tambah</button>
+        </div>
+        <div id="partsContainer" class="space-y-3">
+          <% if (isEdit && service.parts) { service.parts.forEach((p, i) => { %>
+            <div class="part-row border border-slate-200 rounded-xl p-3 bg-slate-50">
+              <div class="grid grid-cols-2 gap-2 mb-2">
+                <select name="parts[<%= i %>][inventory_id]" class="px-3 py-2 border border-slate-300 rounded-lg text-sm" onchange="fillPartData(this, <%= i %>)">
+                  <option value="">Manual</option>
+                  <% inventoryItems.forEach(item => { %>
+                    <option value="<%= item.id %>" data-name="<%= item.name %>" data-buy="<%= item.buy_price %>" data-sell="<%= item.sell_price %>" <%= p.inventory_id == item.id ? 'selected' : '' %>><%= item.name %> (Stok: <%= item.stock %>)</option>
+                  <% }) %>
+                </select>
+                <input type="text" name="parts[<%= i %>][name]" value="<%= p.name %>" placeholder="Nama Part" class="px-3 py-2 border border-slate-300 rounded-lg text-sm">
+              </div>
+              <div class="grid grid-cols-3 gap-2">
+                <input type="number" name="parts[<%= i %>][qty]" value="<%= p.qty %>" placeholder="Qty" min="1" class="px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                <input type="number" name="parts[<%= i %>][buy_price]" value="<%= p.buy_price %>" placeholder="Harga Beli" class="px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                <input type="number" name="parts[<%= i %>][sell_price]" value="<%= p.sell_price %>" placeholder="Harga Jual" class="px-3 py-2 border border-slate-300 rounded-lg text-sm">
+              </div>
+              <button type="button" onclick="this.closest('.part-row').remove()" class="mt-2 text-red-500 text-xs font-bold hover:text-red-700">Hapus</button>
+            </div>
+          <% }) } %>
+        </div>
+      </div>
+
+      <!-- QC Functional -->
+      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+        <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="check-circle" class="w-5 h-5 text-teal-600"></i> QC Functional</h3>
+        <div class="grid grid-cols-2 gap-2">
+          <% qcItems.forEach((item, i) => { 
+            const checked = isEdit && service.qc ? service.qc.find(q => q.item_name === item.name && q.checked) : false;
+          %>
+            <label class="flex items-center gap-2 p-2 rounded-lg hover:bg-slate-50 cursor-pointer text-sm">
+              <input type="hidden" name="qc[<%= i %>][name]" value="<%= item.name %>">
+              <input type="checkbox" name="qc[<%= i %>][checked]" value="1" <%= checked ? 'checked' : '' %> class="rounded">
+              <span><%= item.name %></span>
+            </label>
+          <% }) %>
+        </div>
+      </div>
+
+      <!-- Kelengkapan -->
+      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+        <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="list-checks" class="w-5 h-5 text-indigo-600"></i> Kelengkapan Unit</h3>
+        <div class="grid grid-cols-2 gap-2">
+          <% kelengkapanItems.forEach((item, i) => { 
+            const checked = isEdit && service.kelengkapan ? service.kelengkapan.find(k => k.item_name === item.name && k.checked) : false;
+          %>
+            <label class="flex items-center gap-2 p-2 rounded-lg hover:bg-slate-50 cursor-pointer text-sm">
+              <input type="hidden" name="kelengkapan[<%= i %>][name]" value="<%= item.name %>">
+              <input type="checkbox" name="kelengkapan[<%= i %>][checked]" value="1" <%= checked ? 'checked' : '' %> class="rounded">
+              <span><%= item.name %></span>
+            </label>
+          <% }) %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Submit -->
+  <div class="mt-6 flex gap-3">
+    <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors">
+      <i data-lucide="save" class="w-4 h-4 inline mr-1"></i> <%= isEdit ? 'Perbarui' : 'Simpan' %> Servis
+    </button>
+    <a href="/services" class="px-6 py-3 bg-slate-200 text-slate-700 rounded-xl font-bold hover:bg-slate-300 transition-colors">Batal</a>
+  </div>
+</form>
+
+<script>
+let partIndex = <%= isEdit && service.parts ? service.parts.length : 0 %>;
+const inventoryData = <%- JSON.stringify(inventoryItems.map(i => ({ id: i.id, name: i.name, buy_price: i.buy_price, sell_price: i.sell_price, stock: i.stock }))) %>;
+
+function addPart() {
+  const container = document.getElementById('partsContainer');
+  const html = `
+    <div class="part-row border border-slate-200 rounded-xl p-3 bg-slate-50 animate-fade-in">
+      <div class="grid grid-cols-2 gap-2 mb-2">
+        <select name="parts[${partIndex}][inventory_id]" class="px-3 py-2 border border-slate-300 rounded-lg text-sm" onchange="fillPartData(this, ${partIndex})">
+          <option value="">Manual</option>
+          ${inventoryData.map(i => `<option value="${i.id}" data-name="${i.name}" data-buy="${i.buy_price}" data-sell="${i.sell_price}">${i.name} (Stok: ${i.stock})</option>`).join('')}
+        </select>
+        <input type="text" name="parts[${partIndex}][name]" placeholder="Nama Part" class="px-3 py-2 border border-slate-300 rounded-lg text-sm">
+      </div>
+      <div class="grid grid-cols-3 gap-2">
+        <input type="number" name="parts[${partIndex}][qty]" value="1" placeholder="Qty" min="1" class="px-3 py-2 border border-slate-300 rounded-lg text-sm">
+        <input type="number" name="parts[${partIndex}][buy_price]" placeholder="Harga Beli" class="px-3 py-2 border border-slate-300 rounded-lg text-sm">
+        <input type="number" name="parts[${partIndex}][sell_price]" placeholder="Harga Jual" class="px-3 py-2 border border-slate-300 rounded-lg text-sm">
+      </div>
+      <button type="button" onclick="this.closest('.part-row').remove()" class="mt-2 text-red-500 text-xs font-bold hover:text-red-700">Hapus</button>
+    </div>`;
+  container.insertAdjacentHTML('beforeend', html);
+  partIndex++;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function fillPartData(select, idx) {
+  const opt = select.selectedOptions[0];
+  if (opt.value) {
+    const form = select.closest('.part-row');
+    form.querySelector(`[name="parts[${idx}][name]"]`).value = opt.dataset.name;
+    form.querySelector(`[name="parts[${idx}][buy_price]"]`).value = opt.dataset.buy;
+    form.querySelector(`[name="parts[${idx}][sell_price]"]`).value = opt.dataset.sell;
+  }
+}
+</script>

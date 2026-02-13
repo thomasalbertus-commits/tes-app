@@ -1,0 +1,140 @@
+<!-- Settings Tabs -->
+<div class="bg-white rounded-2xl border border-slate-200 shadow-sm mb-6">
+  <div class="flex overflow-x-auto border-b border-slate-200">
+    <a href="/settings?tab=store" class="px-4 py-3 text-sm font-bold whitespace-nowrap border-b-2 transition-colors <%= tab === 'store' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700' %>">Profil Toko</a>
+    <a href="/settings?tab=master" class="px-4 py-3 text-sm font-bold whitespace-nowrap border-b-2 transition-colors <%= tab === 'master' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700' %>">Master Data</a>
+  </div>
+</div>
+
+<% if (tab === 'store') { %>
+<!-- Store Profile -->
+<div class="max-w-2xl mx-auto">
+  <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+    <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="store" class="w-5 h-5 text-blue-600"></i> Profil Toko</h3>
+    <form method="POST" action="/settings/store">
+      <% if (storeData) { %><input type="hidden" name="store_id" value="<%= storeData.id %>"><% } %>
+      <div class="space-y-4">
+        <div><label class="block text-sm font-semibold mb-1">Nama Toko *</label><input type="text" name="name" value="<%= storeData ? storeData.name : '' %>" required class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm"></div>
+        <div><label class="block text-sm font-semibold mb-1">Alamat</label><textarea name="address" rows="2" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm"><%= storeData ? storeData.address : '' %></textarea></div>
+        <div><label class="block text-sm font-semibold mb-1">No. HP</label><input type="text" name="phone" value="<%= storeData ? storeData.phone : '' %>" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm"></div>
+        <div><label class="block text-sm font-semibold mb-1">Logo URL</label><input type="text" name="logo" value="<%= storeData ? storeData.logo : '' %>" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm" placeholder="https://..."></div>
+      </div>
+      <button type="submit" class="mt-4 px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700"><i data-lucide="save" class="w-4 h-4 inline mr-1"></i> Simpan</button>
+    </form>
+  </div>
+
+  <!-- Stores List -->
+  <% if (stores.length > 1) { %>
+  <div class="mt-6 bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+    <h3 class="font-bold text-slate-800 mb-4">Daftar Toko</h3>
+    <div class="space-y-3">
+      <% stores.forEach(s => { %>
+        <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+          <div>
+            <p class="font-semibold text-sm"><%= s.name %></p>
+            <p class="text-xs text-slate-500"><%= s.address || '-' %></p>
+          </div>
+          <p class="text-xs text-slate-400">#<%= s.id %></p>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+  <% } %>
+</div>
+
+<% } else if (tab === 'master') { %>
+<!-- Master Data -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <!-- Brands -->
+  <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+    <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="tag" class="w-5 h-5 text-purple-600"></i> Brand</h3>
+    <form method="POST" action="/settings/brand" class="flex gap-2 mb-4">
+      <input type="text" name="name" required placeholder="Nama brand baru" class="flex-1 px-4 py-2 border border-slate-300 rounded-xl text-sm">
+      <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700">Tambah</button>
+    </form>
+    <div class="flex flex-wrap gap-2">
+      <% brands.forEach(b => { %>
+        <div class="flex items-center gap-1 px-3 py-1.5 bg-purple-50 border border-purple-200 rounded-full text-sm">
+          <span><%= b.name %></span>
+          <form method="POST" action="/settings/brand/<%= b.id %>/delete" class="inline"><button class="text-red-400 hover:text-red-600 ml-1">&times;</button></form>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+
+  <!-- Categories -->
+  <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+    <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="folder" class="w-5 h-5 text-blue-600"></i> Kategori</h3>
+    <form method="POST" action="/settings/category" class="flex gap-2 mb-4">
+      <input type="text" name="name" required placeholder="Nama kategori" class="flex-1 px-4 py-2 border border-slate-300 rounded-xl text-sm">
+      <select name="type" class="px-3 py-2 border border-slate-300 rounded-xl text-sm">
+        <option value="category">Kategori</option>
+        <option value="sub_category">Sub Kategori</option>
+      </select>
+      <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700">Tambah</button>
+    </form>
+    <div class="space-y-2">
+      <p class="text-xs font-bold text-slate-500 uppercase">Kategori:</p>
+      <div class="flex flex-wrap gap-2 mb-3">
+        <% categories.forEach(c => { %>
+          <div class="flex items-center gap-1 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-full text-sm">
+            <span><%= c.name %></span>
+            <form method="POST" action="/settings/category/<%= c.id %>/delete" class="inline"><button class="text-red-400 hover:text-red-600 ml-1">&times;</button></form>
+          </div>
+        <% }) %>
+      </div>
+      <p class="text-xs font-bold text-slate-500 uppercase">Sub Kategori:</p>
+      <div class="flex flex-wrap gap-2">
+        <% subCategories.forEach(c => { %>
+          <div class="flex items-center gap-1 px-3 py-1.5 bg-slate-100 border border-slate-200 rounded-full text-sm">
+            <span><%= c.name %></span>
+            <form method="POST" action="/settings/category/<%= c.id %>/delete" class="inline"><button class="text-red-400 hover:text-red-600 ml-1">&times;</button></form>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+  </div>
+
+  <!-- QC Items -->
+  <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+    <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="check-circle" class="w-5 h-5 text-teal-600"></i> QC Functional</h3>
+    <form method="POST" action="/settings/qc" class="flex gap-2 mb-4">
+      <input type="text" name="name" required placeholder="Nama item QC" class="flex-1 px-4 py-2 border border-slate-300 rounded-xl text-sm">
+      <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700">Tambah</button>
+    </form>
+    <div class="flex flex-wrap gap-2">
+      <% qcItems.forEach(q => { %>
+        <div class="flex items-center gap-1 px-3 py-1.5 bg-teal-50 border border-teal-200 rounded-full text-sm">
+          <span><%= q.name %></span>
+          <% if (!q.is_master) { %>
+            <form method="POST" action="/settings/qc/<%= q.id %>/delete" class="inline"><button class="text-red-400 hover:text-red-600 ml-1">&times;</button></form>
+          <% } else { %>
+            <span class="text-teal-400 text-xs ml-1">(master)</span>
+          <% } %>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+
+  <!-- Kelengkapan Items -->
+  <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+    <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="list-checks" class="w-5 h-5 text-indigo-600"></i> Kelengkapan Unit</h3>
+    <form method="POST" action="/settings/kelengkapan" class="flex gap-2 mb-4">
+      <input type="text" name="name" required placeholder="Nama item" class="flex-1 px-4 py-2 border border-slate-300 rounded-xl text-sm">
+      <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700">Tambah</button>
+    </form>
+    <div class="flex flex-wrap gap-2">
+      <% kelengkapanItems.forEach(k => { %>
+        <div class="flex items-center gap-1 px-3 py-1.5 bg-indigo-50 border border-indigo-200 rounded-full text-sm">
+          <span><%= k.name %></span>
+          <% if (!k.is_master) { %>
+            <form method="POST" action="/settings/kelengkapan/<%= k.id %>/delete" class="inline"><button class="text-red-400 hover:text-red-600 ml-1">&times;</button></form>
+          <% } else { %>
+            <span class="text-indigo-400 text-xs ml-1">(master)</span>
+          <% } %>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+</div>
+<% } %>

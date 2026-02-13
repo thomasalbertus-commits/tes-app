@@ -1,0 +1,165 @@
+<!-- Service Detail -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Left: Main Info -->
+  <div class="lg:col-span-2 space-y-6">
+    <!-- Status & Token -->
+    <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+        <div>
+          <h2 class="text-2xl font-extrabold text-blue-700">TOKEN: <%= service.token %></h2>
+          <p class="text-sm text-slate-500">Dibuat: <%= formatDate(service.created_at) %></p>
+        </div>
+        <span class="px-4 py-2 rounded-full text-sm font-bold <%= statusColor(service.status) %>"><%= service.status %></span>
+      </div>
+      
+      <!-- Update Status -->
+      <form method="POST" action="/services/<%= service.id %>/status" class="flex flex-wrap gap-2">
+        <% ['Diterima','Diagnosa','Menunggu Sparepart','Selesai','Dibatalkan'].forEach(s => { %>
+          <button type="submit" name="status" value="<%= s %>" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-colors <%= service.status === s ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' %>" <%= service.status === s ? 'disabled' : '' %>>
+            <%= s %>
+          </button>
+        <% }) %>
+      </form>
+    </div>
+
+    <!-- Customer & Unit Info -->
+    <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2"><i data-lucide="user" class="w-4 h-4 text-blue-600"></i> Pelanggan</h3>
+          <dl class="space-y-2 text-sm">
+            <div class="flex justify-between"><dt class="text-slate-500">Nama</dt><dd class="font-semibold"><%= service.customer_name %></dd></div>
+            <div class="flex justify-between"><dt class="text-slate-500">HP</dt><dd class="font-semibold"><%= service.phone || '-' %></dd></div>
+          </dl>
+        </div>
+        <div>
+          <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2"><i data-lucide="smartphone" class="w-4 h-4 text-purple-600"></i> Unit</h3>
+          <dl class="space-y-2 text-sm">
+            <div class="flex justify-between"><dt class="text-slate-500">Tipe</dt><dd class="font-semibold"><%= service.unit_type || '-' %></dd></div>
+            <div class="flex justify-between"><dt class="text-slate-500">Keluhan</dt><dd class="font-semibold"><%= service.complaint || '-' %></dd></div>
+            <div class="flex justify-between"><dt class="text-slate-500">Teknisi</dt><dd class="font-semibold"><%= service.technician || '-' %></dd></div>
+            <div class="flex justify-between"><dt class="text-slate-500">Garansi</dt><dd class="font-semibold"><%= service.warranty || '-' %></dd></div>
+          </dl>
+        </div>
+      </div>
+      <% if (service.notes) { %>
+        <div class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-xl text-sm text-yellow-800">
+          <strong>Catatan:</strong> <%= service.notes %>
+        </div>
+      <% } %>
+    </div>
+
+    <!-- Sparepart -->
+    <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+      <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="package" class="w-4 h-4 text-orange-600"></i> Sparepart</h3>
+      <% if (service.parts && service.parts.length > 0) { %>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50"><tr>
+              <th class="px-3 py-2 text-left">Nama</th>
+              <th class="px-3 py-2 text-center">Qty</th>
+              <th class="px-3 py-2 text-right">Beli</th>
+              <th class="px-3 py-2 text-right">Jual</th>
+              <th class="px-3 py-2 text-right">Subtotal</th>
+            </tr></thead>
+            <tbody>
+              <% let totalBuy = 0, totalSell = 0; service.parts.forEach(p => { totalBuy += p.buy_price * p.qty; totalSell += p.sell_price * p.qty; %>
+                <tr class="border-t border-slate-100">
+                  <td class="px-3 py-2"><%= p.name %></td>
+                  <td class="px-3 py-2 text-center"><%= p.qty %></td>
+                  <td class="px-3 py-2 text-right"><%= formatCurrency(p.buy_price) %></td>
+                  <td class="px-3 py-2 text-right"><%= formatCurrency(p.sell_price) %></td>
+                  <td class="px-3 py-2 text-right font-semibold"><%= formatCurrency(p.sell_price * p.qty) %></td>
+                </tr>
+              <% }) %>
+              <tr class="border-t-2 border-slate-300 font-bold">
+                <td class="px-3 py-2" colspan="2">Total</td>
+                <td class="px-3 py-2 text-right text-red-600"><%= formatCurrency(totalBuy) %></td>
+                <td class="px-3 py-2 text-right text-green-600"><%= formatCurrency(totalSell) %></td>
+                <td class="px-3 py-2 text-right text-blue-600"><%= formatCurrency(totalSell) %></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      <% } else { %>
+        <p class="text-slate-500 text-sm">Tidak ada sparepart</p>
+      <% } %>
+    </div>
+
+    <!-- QC & Kelengkapan -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <% if (service.qc && service.qc.length > 0) { %>
+      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+        <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2"><i data-lucide="check-circle" class="w-4 h-4 text-teal-600"></i> QC Functional</h3>
+        <div class="space-y-1">
+          <% service.qc.forEach(q => { %>
+            <div class="flex items-center gap-2 text-sm">
+              <% if (q.checked) { %>
+                <i data-lucide="check-circle-2" class="w-4 h-4 text-green-500"></i>
+              <% } else { %>
+                <i data-lucide="circle" class="w-4 h-4 text-slate-300"></i>
+              <% } %>
+              <span class="<%= q.checked ? 'text-green-700' : 'text-slate-400' %>"><%= q.item_name %></span>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+      <% } %>
+      <% if (service.kelengkapan && service.kelengkapan.length > 0) { %>
+      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+        <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2"><i data-lucide="list-checks" class="w-4 h-4 text-indigo-600"></i> Kelengkapan</h3>
+        <div class="space-y-1">
+          <% service.kelengkapan.forEach(k => { %>
+            <div class="flex items-center gap-2 text-sm">
+              <% if (k.checked) { %>
+                <i data-lucide="check-circle-2" class="w-4 h-4 text-green-500"></i>
+              <% } else { %>
+                <i data-lucide="circle" class="w-4 h-4 text-slate-300"></i>
+              <% } %>
+              <span class="<%= k.checked ? 'text-green-700' : 'text-slate-400' %>"><%= k.item_name %></span>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Right Sidebar: Financial Summary -->
+  <div class="space-y-6">
+    <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+      <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="banknote" class="w-4 h-4 text-emerald-600"></i> Keuangan</h3>
+      <dl class="space-y-3 text-sm">
+        <div class="flex justify-between"><dt class="text-slate-500">Estimasi Biaya</dt><dd class="font-bold text-lg"><%= formatCurrency(service.cost_estimate) %></dd></div>
+        <div class="flex justify-between"><dt class="text-slate-500">DP</dt><dd class="font-bold text-green-600"><%= formatCurrency(service.dp) %></dd></div>
+        <div class="flex justify-between"><dt class="text-slate-500">Sisa</dt><dd class="font-bold text-red-600"><%= formatCurrency(service.cost_estimate - service.dp) %></dd></div>
+        <hr>
+        <div class="flex justify-between"><dt class="text-slate-500">Biaya Jasa</dt><dd class="font-bold"><%= formatCurrency(service.service_fee) %></dd></div>
+        <div class="flex justify-between">
+          <dt class="text-slate-500">Status Bayar</dt>
+          <dd><span class="px-2 py-1 rounded-full text-xs font-bold <%= statusColor(service.payment_status) %>"><%= service.payment_status %></span></dd>
+        </div>
+        <div class="flex justify-between"><dt class="text-slate-500">Metode</dt><dd class="font-semibold capitalize"><%= service.payment_method || '-' %></dd></div>
+      </dl>
+    </div>
+
+    <!-- Actions -->
+    <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-3">
+      <h3 class="font-bold text-slate-800 mb-2">Aksi</h3>
+      <a href="/services/<%= service.id %>/edit" class="flex items-center gap-2 px-4 py-2.5 bg-yellow-500 text-white rounded-xl font-bold hover:bg-yellow-600 transition-colors text-sm w-full justify-center">
+        <i data-lucide="pencil" class="w-4 h-4"></i> Edit Servis
+      </a>
+      <button onclick="window.print()" class="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors text-sm w-full justify-center">
+        <i data-lucide="printer" class="w-4 h-4"></i> Cetak Invoice
+      </button>
+      <form method="POST" action="/services/<%= service.id %>/delete" onsubmit="return confirm('Yakin hapus servis ini?')">
+        <button type="submit" class="flex items-center gap-2 px-4 py-2.5 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-colors text-sm w-full justify-center">
+          <i data-lucide="trash-2" class="w-4 h-4"></i> Hapus Servis
+        </button>
+      </form>
+      <a href="/services" class="flex items-center gap-2 px-4 py-2.5 bg-slate-200 text-slate-700 rounded-xl font-bold hover:bg-slate-300 transition-colors text-sm w-full justify-center">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i> Kembali
+      </a>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,89 @@
+<!-- Filter -->
+<div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm mb-6">
+  <form method="GET" class="flex flex-wrap gap-2 items-center">
+    <% ['today','month','year','custom'].forEach(f => { %>
+      <button type="submit" name="filter" value="<%= f %>" class="px-3 py-2 rounded-xl text-sm font-bold transition-colors <%= filter === f ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' %>">
+        <%= f === 'today' ? 'Hari Ini' : f === 'month' ? 'Bulan Ini' : f === 'year' ? 'Tahun Ini' : 'Custom' %>
+      </button>
+    <% }) %>
+    <% if (filter === 'custom') { %>
+      <input type="date" name="startDate" value="<%= startDate %>" class="px-3 py-2 border border-slate-300 rounded-xl text-sm">
+      <span class="text-sm text-slate-400">s/d</span>
+      <input type="date" name="endDate" value="<%= endDate %>" class="px-3 py-2 border border-slate-300 rounded-xl text-sm">
+      <button type="submit" name="filter" value="custom" class="px-3 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold">Terapkan</button>
+    <% } %>
+  </form>
+</div>
+
+<!-- Summary Cards -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  <div class="bg-green-50 rounded-2xl p-4 border border-green-200">
+    <p class="text-xs text-green-600 font-semibold">Pemasukan</p>
+    <p class="text-xl font-extrabold text-green-700"><%= formatCurrency(summary.income) %></p>
+  </div>
+  <div class="bg-red-50 rounded-2xl p-4 border border-red-200">
+    <p class="text-xs text-red-600 font-semibold">Pengeluaran</p>
+    <p class="text-xl font-extrabold text-red-700"><%= formatCurrency(summary.expense) %></p>
+  </div>
+  <div class="bg-blue-50 rounded-2xl p-4 border border-blue-200">
+    <p class="text-xs text-blue-600 font-semibold">Keuntungan</p>
+    <p class="text-xl font-extrabold text-blue-700"><%= formatCurrency(summary.profit) %></p>
+  </div>
+  <div class="bg-orange-50 rounded-2xl p-4 border border-orange-200">
+    <p class="text-xs text-orange-600 font-semibold">Kerugian</p>
+    <p class="text-xl font-extrabold text-orange-700"><%= formatCurrency(summary.loss) %></p>
+  </div>
+</div>
+
+<!-- Add Expense -->
+<div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm mb-6">
+  <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="minus-circle" class="w-5 h-5 text-red-600"></i> Catat Pengeluaran Operasional</h3>
+  <form method="POST" action="/finance/expense" class="flex flex-col md:flex-row gap-3">
+    <input type="number" name="amount" placeholder="Jumlah" required class="px-4 py-2.5 border border-slate-300 rounded-xl text-sm flex-1">
+    <input type="text" name="description" placeholder="Deskripsi" class="px-4 py-2.5 border border-slate-300 rounded-xl text-sm flex-1">
+    <select name="cash_account_id" class="px-4 py-2.5 border border-slate-300 rounded-xl text-sm">
+      <option value="">Akun Kas</option>
+      <% cashAccounts.forEach(a => { %><option value="<%= a.id %>"><%= a.name %></option><% }) %>
+    </select>
+    <input type="date" name="date" value="<%= new Date().toISOString().split('T')[0] %>" class="px-4 py-2.5 border border-slate-300 rounded-xl text-sm">
+    <button type="submit" class="px-4 py-2.5 bg-red-600 text-white rounded-xl text-sm font-bold hover:bg-red-700">Simpan</button>
+  </form>
+</div>
+
+<!-- Transactions Table -->
+<div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full">
+      <thead class="bg-slate-50 border-b border-slate-200">
+        <tr>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 uppercase">Tanggal</th>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 uppercase">Tipe</th>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 uppercase">Kategori</th>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 uppercase hidden md:table-cell">Deskripsi</th>
+          <th class="px-4 py-3 text-right text-xs font-bold text-slate-600 uppercase">Jumlah</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        <% if (transactions.length === 0) { %>
+          <tr><td colspan="5" class="px-4 py-8 text-center text-slate-500">Belum ada transaksi</td></tr>
+        <% } %>
+        <% transactions.forEach(t => { %>
+          <tr class="hover:bg-slate-50">
+            <td class="px-4 py-3 text-xs text-slate-500"><%= formatDate(t.date || t.created_at) %></td>
+            <td class="px-4 py-3">
+              <span class="px-2 py-1 rounded-full text-xs font-bold
+                <%= t.type === 'income' ? 'bg-green-100 text-green-700' : t.type === 'expense' ? 'bg-red-100 text-red-700' : t.type === 'profit' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700' %>">
+                <%= t.type === 'income' ? 'Masuk' : t.type === 'expense' ? 'Keluar' : t.type === 'profit' ? 'Untung' : 'Rugi' %>
+              </span>
+            </td>
+            <td class="px-4 py-3 text-sm font-semibold"><%= t.category %></td>
+            <td class="px-4 py-3 text-sm text-slate-500 hidden md:table-cell"><%= t.description || '-' %></td>
+            <td class="px-4 py-3 text-sm font-bold text-right <%= t.type === 'income' || t.type === 'profit' ? 'text-green-700' : 'text-red-700' %>">
+              <%= t.type === 'income' || t.type === 'profit' ? '+' : '-' %> <%= formatCurrency(t.amount) %>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>

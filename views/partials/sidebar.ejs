@@ -1,0 +1,144 @@
+<%
+  const menuGroups = [
+    {
+      title: 'Dashboard',
+      items: [
+        { href: '/dashboard', icon: 'layout-dashboard', label: 'Dashboard', key: 'menu_dashboard' }
+      ]
+    },
+    {
+      title: 'Transaksi',
+      items: [
+        { href: '/services', icon: 'wrench', label: 'Servis HP', key: 'menu_service' },
+        { href: '/sales', icon: 'shopping-cart', label: 'Penjualan', key: 'menu_sales' },
+        { href: '/purchases', icon: 'package-plus', label: 'Pembelian', key: 'menu_purchase' },
+        { href: '/returns/sales', icon: 'undo-2', label: 'Retur Penjualan', key: 'menu_return_sales' },
+        { href: '/returns/purchases', icon: 'undo', label: 'Retur Pembelian', key: 'menu_return_purchase' }
+      ]
+    },
+    {
+      title: 'Keuangan',
+      items: [
+        { href: '/finance', icon: 'bar-chart-3', label: 'Laporan Keuangan', key: 'menu_finance' },
+        { href: '/cash', icon: 'banknote', label: 'Kas', key: 'menu_cash' },
+        { href: '/debts/payable', icon: 'credit-card', label: 'Utang', key: 'menu_payable' },
+        { href: '/debts/receivable', icon: 'wallet', label: 'Piutang', key: 'menu_receivable' }
+      ]
+    },
+    {
+      title: 'Inventory',
+      items: [
+        { href: '/inventory', icon: 'boxes', label: 'Stok', key: 'menu_inventory' },
+        { href: '/suppliers', icon: 'truck', label: 'Supplier', key: 'menu_supplier' },
+        { href: '/customers', icon: 'users', label: 'Pelanggan', key: 'menu_customers' }
+      ]
+    },
+    {
+      title: 'Lainnya',
+      items: [
+        { href: '/hr', icon: 'briefcase', label: 'HR & Payroll', key: 'menu_hr' },
+        { href: '/reports', icon: 'file-text', label: 'Laporan', key: 'menu_report' }
+      ]
+    }
+  ];
+  
+  // Admin-only menus
+  const adminMenus = [
+    { href: '/users', icon: 'user-cog', label: 'Pegawai', key: 'menu_users' },
+    { href: '/settings', icon: 'settings', label: 'Pengaturan', key: 'menu_settings' }
+  ];
+  
+  const isOwnerOrAdmin = currentUser && ['owner', 'superadmin', 'admin'].includes(currentUser.role);
+  const rights = typeof accessRights !== 'undefined' ? accessRights : {};
+  
+  function canAccess(key) {
+    if (!currentUser) return false;
+    if (['superadmin', 'owner'].includes(currentUser.role)) return true;
+    return rights[key] !== false;
+  }
+%>
+
+<!-- Desktop Sidebar -->
+<aside id="sidebar" class="fixed left-0 top-0 h-full w-64 saas-gradient text-white z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300 sidebar-scroll overflow-y-auto">
+  <!-- Logo -->
+  <div class="p-4 border-b border-slate-700">
+    <a href="/dashboard" class="flex items-center gap-3">
+      <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-lg">iF</div>
+      <div>
+        <h1 class="font-bold text-lg">iFix Pro</h1>
+        <p class="text-xs text-slate-400">Enterprise</p>
+      </div>
+    </a>
+  </div>
+  
+  <!-- Store Selector -->
+  <% if (typeof availableStores !== 'undefined' && availableStores.length > 0) { %>
+  <div class="p-3 border-b border-slate-700">
+    <select onchange="switchStore(this.value)" class="w-full bg-slate-700 text-white text-sm rounded-lg px-3 py-2 border-none focus:ring-2 focus:ring-blue-500">
+      <option value="">Semua Cabang</option>
+      <% availableStores.forEach(s => { %>
+        <option value="<%= s.id %>" <%= (typeof currentStore !== 'undefined' && currentStore && currentStore.id === s.id) ? 'selected' : '' %>><%= s.name %></option>
+      <% }) %>
+    </select>
+  </div>
+  <% } %>
+  
+  <!-- Navigation -->
+  <nav class="p-3 space-y-1">
+    <% menuGroups.forEach(group => { %>
+      <div class="mb-3">
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">
+          <%= group.title %>
+        </p>
+        <% group.items.forEach(item => { %>
+          <% if (canAccess(item.key)) { %>
+            <a href="<%= item.href %>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all <%= currentPath.startsWith(item.href) ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-300 hover:bg-slate-700 hover:text-white' %>">
+              <i data-lucide="<%= item.icon %>" class="w-5 h-5"></i>
+              <span><%= item.label %></span>
+            </a>
+          <% } %>
+        <% }) %>
+      </div>
+    <% }) %>
+    
+    <% if (isOwnerOrAdmin) { %>
+    <div class="mb-3">
+      <p class="text-xs font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">Admin</p>
+      <% adminMenus.forEach(item => { %>
+        <% if (canAccess(item.key)) { %>
+          <a href="<%= item.href %>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all <%= currentPath.startsWith(item.href) ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-300 hover:bg-slate-700 hover:text-white' %>">
+            <i data-lucide="<%= item.icon %>" class="w-5 h-5"></i>
+            <span><%= item.label %></span>
+          </a>
+        <% } %>
+      <% }) %>
+    </div>
+    <% } %>
+    
+    <% if (currentUser && currentUser.role === 'superadmin') { %>
+    <div class="mb-3">
+      <p class="text-xs font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">SuperAdmin</p>
+      <a href="/superadmin" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all <%= currentPath.startsWith('/superadmin') ? 'bg-purple-600 text-white shadow-lg' : 'text-purple-300 hover:bg-purple-800 hover:text-white' %>">
+        <i data-lucide="shield" class="w-5 h-5"></i>
+        <span>SuperAdmin Panel</span>
+      </a>
+    </div>
+    <% } %>
+  </nav>
+  
+  <!-- User Info -->
+  <div class="absolute bottom-0 left-0 right-0 p-3 border-t border-slate-700 bg-slate-900">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
+        <%= currentUser ? currentUser.name.charAt(0).toUpperCase() : '?' %>
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-medium text-white truncate"><%= currentUser ? currentUser.name : '' %></p>
+        <p class="text-xs text-slate-400 capitalize"><%= currentUser ? currentUser.role : '' %></p>
+      </div>
+      <a href="/logout" class="text-slate-400 hover:text-red-400 transition-colors" title="Logout">
+        <i data-lucide="log-out" class="w-5 h-5"></i>
+      </a>
+    </div>
+  </div>
+</aside>

@@ -1,0 +1,60 @@
+<!-- Sale Detail -->
+<div class="max-w-2xl mx-auto space-y-6">
+  <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+    <div class="text-center mb-6">
+      <h2 class="text-xl font-extrabold text-slate-800">NOTA PENJUALAN</h2>
+      <p class="text-sm text-slate-500">#<%= sale.id %> | <%= formatDate(sale.created_at) %></p>
+    </div>
+    
+    <div class="mb-4 text-sm">
+      <p><strong>Pelanggan:</strong> <%= sale.customer_name || 'Umum' %></p>
+      <p><strong>Metode Bayar:</strong> <span class="capitalize"><%= sale.payment_method %></span></p>
+    </div>
+
+    <table class="w-full text-sm mb-4">
+      <thead class="border-b-2 border-slate-300">
+        <tr>
+          <th class="py-2 text-left">Item</th>
+          <th class="py-2 text-center">Qty</th>
+          <th class="py-2 text-right">Harga</th>
+          <th class="py-2 text-right">Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (sale.items) { sale.items.forEach(item => { %>
+          <tr class="border-b border-slate-100">
+            <td class="py-2"><%= item.name %></td>
+            <td class="py-2 text-center"><%= item.qty %></td>
+            <td class="py-2 text-right"><%= formatCurrency(item.price) %></td>
+            <td class="py-2 text-right font-semibold"><%= formatCurrency(item.price * item.qty) %></td>
+          </tr>
+        <% }) } %>
+      </tbody>
+    </table>
+
+    <div class="border-t-2 border-slate-300 pt-3 space-y-2 text-sm">
+      <div class="flex justify-between"><span>Subtotal</span><span class="font-semibold"><%= formatCurrency(sale.subtotal) %></span></div>
+      <% if (sale.discount_amount > 0) { %>
+        <div class="flex justify-between text-red-600"><span>Diskon (<%= sale.discount_type === 'percent' ? sale.discount + '%' : formatCurrency(sale.discount) %>)</span><span>- <%= formatCurrency(sale.discount_amount) %></span></div>
+      <% } %>
+      <div class="flex justify-between text-lg font-extrabold"><span>Total</span><span class="text-green-700"><%= formatCurrency(sale.total) %></span></div>
+    </div>
+    <% if (sale.notes) { %>
+      <div class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-xl text-sm text-yellow-800">
+        <strong>Catatan:</strong> <%= sale.notes %>
+      </div>
+    <% } %>
+  </div>
+
+  <div class="flex gap-3">
+    <button onclick="window.print()" class="flex-1 px-4 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors text-center">
+      <i data-lucide="printer" class="w-4 h-4 inline mr-1"></i> Cetak
+    </button>
+    <form method="POST" action="/sales/<%= sale.id %>/delete" onsubmit="return confirm('Yakin hapus penjualan ini?')" class="flex-1">
+      <button type="submit" class="w-full px-4 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-colors">
+        <i data-lucide="trash-2" class="w-4 h-4 inline mr-1"></i> Hapus
+      </button>
+    </form>
+    <a href="/sales" class="flex-1 px-4 py-3 bg-slate-200 text-slate-700 rounded-xl font-bold hover:bg-slate-300 transition-colors text-center">Kembali</a>
+  </div>
+</div>

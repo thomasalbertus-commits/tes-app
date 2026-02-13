@@ -1,0 +1,188 @@
+<!-- POS Interface -->
+<form method="POST" action="/sales" id="posForm">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Left: Product Selection -->
+    <div class="lg:col-span-2 space-y-4">
+      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+        <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="package" class="w-5 h-5 text-blue-600"></i> Pilih Produk</h3>
+        <input type="text" id="productSearch" placeholder="Cari produk..." class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm mb-4 focus:ring-2 focus:ring-blue-500" oninput="filterProducts()">
+        <div id="productGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-96 overflow-y-auto">
+          <% inventoryItems.forEach(item => { %>
+            <div class="product-card border border-slate-200 rounded-xl p-3 cursor-pointer hover:border-blue-400 hover:shadow-md transition-all" 
+                 data-id="<%= item.id %>" data-name="<%= item.name %>" data-price="<%= item.sell_price %>" data-buy="<%= item.buy_price %>" data-stock="<%= item.stock %>" data-category="<%= item.category %>"
+                 onclick="addToCart(this)">
+              <p class="font-semibold text-sm text-slate-800 truncate"><%= item.name %></p>
+              <p class="text-xs text-slate-500 mt-1"><%= item.category || '-' %></p>
+              <p class="text-sm font-bold text-blue-700 mt-2"><%= formatCurrency(item.sell_price) %></p>
+              <p class="text-xs text-slate-400">Stok: <span class="<%= item.stock <= 0 ? 'text-red-500' : '' %>"><%= item.stock %></span></p>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Cart -->
+    <div class="space-y-4">
+      <!-- Customer -->
+      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+        <label class="block text-sm font-semibold text-slate-600 mb-1">Pelanggan</label>
+        <input type="text" name="customer_name" value="Umum" list="customerList" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm">
+        <datalist id="customerList">
+          <% customers.forEach(c => { %><option value="<%= c.name %>"><% }) %>
+        </datalist>
+      </div>
+
+      <!-- Cart Items -->
+      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+        <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="shopping-cart" class="w-5 h-5 text-green-600"></i> Keranjang</h3>
+        <div id="cartItems" class="space-y-3 max-h-64 overflow-y-auto">
+          <p id="emptyCart" class="text-slate-400 text-sm text-center py-4">Belum ada item</p>
+        </div>
+        
+        <hr class="my-4">
+        
+        <!-- Discount -->
+        <div class="grid grid-cols-2 gap-2 mb-3">
+          <select name="discount_type" id="discountType" class="px-3 py-2 border border-slate-300 rounded-lg text-sm" onchange="recalculate()">
+            <option value="nominal">Diskon (Rp)</option>
+            <option value="percent">Diskon (%)</option>
+          </select>
+          <input type="number" name="discount" id="discountValue" value="0" class="px-3 py-2 border border-slate-300 rounded-lg text-sm" oninput="recalculate()">
+        </div>
+
+        <!-- Totals -->
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between"><span class="text-slate-500">Subtotal</span><span id="subtotalDisplay" class="font-semibold">Rp 0</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Diskon</span><span id="discountDisplay" class="font-semibold text-red-500">- Rp 0</span></div>
+          <div class="flex justify-between text-lg"><span class="font-bold">Total</span><span id="totalDisplay" class="font-extrabold text-green-700">Rp 0</span></div>
+        </div>
+      </div>
+
+      <!-- Payment -->
+      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+        <div class="space-y-3">
+          <div>
+            <label class="block text-sm font-semibold text-slate-600 mb-1">Metode Bayar</label>
+            <select name="payment_method" class="w-full px-3 py-2.5 border border-slate-300 rounded-xl text-sm">
+              <option value="cash">Cash</option>
+              <option value="transfer">Transfer</option>
+              <option value="ewallet">E-Wallet</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-slate-600 mb-1">Akun Kas</label>
+            <select name="cash_account_id" class="w-full px-3 py-2.5 border border-slate-300 rounded-xl text-sm">
+              <option value="">-- Tidak Ada --</option>
+              <% cashAccounts.forEach(a => { %>
+                <option value="<%= a.id %>"><%= a.name %></option>
+              <% }) %>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-slate-600 mb-1">Catatan</label>
+            <input type="text" name="notes" class="w-full px-3 py-2.5 border border-slate-300 rounded-xl text-sm">
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" id="submitBtn" disabled class="w-full px-6 py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+        <i data-lucide="check" class="w-5 h-5 inline mr-1"></i> Proses Penjualan
+      </button>
+      <a href="/sales" class="block text-center px-6 py-3 bg-slate-200 text-slate-700 rounded-xl font-bold hover:bg-slate-300 transition-colors">Batal</a>
+    </div>
+  </div>
+</form>
+
+<script>
+const cart = [];
+let itemCounter = 0;
+
+function filterProducts() {
+  const q = document.getElementById('productSearch').value.toLowerCase();
+  document.querySelectorAll('.product-card').forEach(card => {
+    const name = card.dataset.name.toLowerCase();
+    const cat = card.dataset.category.toLowerCase();
+    card.style.display = (name.includes(q) || cat.includes(q)) ? '' : 'none';
+  });
+}
+
+function addToCart(el) {
+  const id = el.dataset.id;
+  const existing = cart.find(c => c.inventory_id === id);
+  if (existing) {
+    existing.qty++;
+    renderCart();
+    return;
+  }
+  cart.push({
+    index: itemCounter++,
+    inventory_id: id,
+    name: el.dataset.name,
+    price: parseFloat(el.dataset.price),
+    buy_price: parseFloat(el.dataset.buy),
+    category: el.dataset.category,
+    qty: 1
+  });
+  renderCart();
+}
+
+function removeFromCart(idx) {
+  const i = cart.findIndex(c => c.index === idx);
+  if (i > -1) cart.splice(i, 1);
+  renderCart();
+}
+
+function updateQty(idx, qty) {
+  const item = cart.find(c => c.index === idx);
+  if (item) item.qty = Math.max(1, parseInt(qty) || 1);
+  recalculate();
+}
+
+function renderCart() {
+  const container = document.getElementById('cartItems');
+  const empty = document.getElementById('emptyCart');
+  
+  if (cart.length === 0) {
+    empty.style.display = '';
+    container.innerHTML = '';
+    container.appendChild(empty);
+    document.getElementById('submitBtn').disabled = true;
+    recalculate();
+    return;
+  }
+  
+  empty.style.display = 'none';
+  document.getElementById('submitBtn').disabled = false;
+  
+  container.innerHTML = cart.map(item => `
+    <div class="flex items-center gap-3 p-2 bg-slate-50 rounded-xl">
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-semibold truncate">${item.name}</p>
+        <p class="text-xs text-blue-600 font-bold">Rp ${item.price.toLocaleString('id-ID')}</p>
+        <input type="hidden" name="items[${item.index}][inventory_id]" value="${item.inventory_id}">
+        <input type="hidden" name="items[${item.index}][name]" value="${item.name}">
+        <input type="hidden" name="items[${item.index}][price]" value="${item.price}">
+        <input type="hidden" name="items[${item.index}][buy_price]" value="${item.buy_price}">
+        <input type="hidden" name="items[${item.index}][category]" value="${item.category}">
+      </div>
+      <input type="number" name="items[${item.index}][qty]" value="${item.qty}" min="1" class="w-16 px-2 py-1.5 border border-slate-300 rounded-lg text-sm text-center" onchange="updateQty(${item.index}, this.value)">
+      <button type="button" onclick="removeFromCart(${item.index})" class="p-1.5 text-red-500 hover:bg-red-50 rounded-lg"><i data-lucide="x" class="w-4 h-4"></i></button>
+    </div>
+  `).join('');
+  
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+  recalculate();
+}
+
+function recalculate() {
+  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+  const discType = document.getElementById('discountType').value;
+  const discVal = parseFloat(document.getElementById('discountValue').value) || 0;
+  const discAmount = discType === 'percent' ? (subtotal * discVal / 100) : discVal;
+  const total = Math.max(0, subtotal - discAmount);
+  
+  document.getElementById('subtotalDisplay').textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
+  document.getElementById('discountDisplay').textContent = '- Rp ' + discAmount.toLocaleString('id-ID');
+  document.getElementById('totalDisplay').textContent = 'Rp ' + total.toLocaleString('id-ID');
+}
+</script>

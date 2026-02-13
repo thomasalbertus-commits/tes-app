@@ -1,0 +1,56 @@
+<!-- Purchases List -->
+<div class="flex justify-between items-center mb-6">
+  <p class="text-sm text-slate-500"><%= purchases.length %> pembelian</p>
+  <a href="/purchases/new" class="px-4 py-2.5 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-700 flex items-center gap-2">
+    <i data-lucide="plus" class="w-4 h-4"></i> Pembelian Baru
+  </a>
+</div>
+
+<div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full">
+      <thead class="bg-slate-50 border-b border-slate-200">
+        <tr>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 uppercase">#ID</th>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 uppercase">Supplier</th>
+          <th class="px-4 py-3 text-center text-xs font-bold text-slate-600 uppercase hidden md:table-cell">Items</th>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 uppercase hidden md:table-cell">Metode</th>
+          <th class="px-4 py-3 text-right text-xs font-bold text-slate-600 uppercase">Total</th>
+          <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 uppercase hidden md:table-cell">Tanggal</th>
+          <th class="px-4 py-3 text-center text-xs font-bold text-slate-600 uppercase">Aksi</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        <% if (purchases.length === 0) { %>
+          <tr><td colspan="7" class="px-4 py-8 text-center text-slate-500">Belum ada pembelian</td></tr>
+        <% } %>
+        <% purchases.forEach(p => { %>
+          <tr class="hover:bg-slate-50">
+            <td class="px-4 py-3 font-mono font-bold text-blue-600 text-sm">#<%= p.id %></td>
+            <td class="px-4 py-3 text-sm font-semibold"><%= p.supplier_name || '-' %></td>
+            <td class="px-4 py-3 text-center text-sm hidden md:table-cell"><%= p.items ? p.items.length : 0 %></td>
+            <td class="px-4 py-3 text-sm capitalize hidden md:table-cell">
+              <span class="px-2 py-1 rounded-full text-xs font-bold <%= p.payment_method === 'credit' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700' %>"><%= p.payment_method %></span>
+            </td>
+            <td class="px-4 py-3 text-sm font-bold text-right text-red-700"><%= formatCurrency(p.total) %></td>
+            <td class="px-4 py-3 text-xs text-slate-500 hidden md:table-cell"><%= formatDate(p.created_at) %></td>
+            <td class="px-4 py-3 text-center">
+              <form method="POST" action="/purchases/<%= p.id %>/delete" onsubmit="return confirm('Yakin hapus pembelian ini?')" class="inline">
+                <button class="p-2 text-red-600 hover:bg-red-50 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+              </form>
+            </td>
+          </tr>
+          <% if (p.items && p.items.length > 0) { %>
+            <tr class="bg-slate-50"><td colspan="7" class="px-6 py-2">
+              <div class="flex flex-wrap gap-2">
+                <% p.items.forEach(item => { %>
+                  <span class="text-xs bg-white border border-slate-200 rounded-lg px-2 py-1"><%= item.name %> x<%= item.qty %> @ <%= formatCurrency(item.buy_price) %></span>
+                <% }) %>
+              </div>
+            </td></tr>
+          <% } %>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>

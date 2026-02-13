@@ -1,0 +1,141 @@
+<!-- Debts (Payable/Receivable) -->
+<div class="flex justify-between items-center mb-6">
+  <div class="flex gap-2">
+    <a href="/debts/payable" class="px-4 py-2 rounded-xl text-sm font-bold transition-colors <%= debtType === 'payable' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' %>">Utang</a>
+    <a href="/debts/receivable" class="px-4 py-2 rounded-xl text-sm font-bold transition-colors <%= debtType === 'receivable' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' %>">Piutang</a>
+  </div>
+  <button onclick="document.getElementById('addDebtModal').classList.remove('hidden')" class="px-4 py-2.5 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-700 flex items-center gap-2">
+    <i data-lucide="plus" class="w-4 h-4"></i> Tambah
+  </button>
+</div>
+
+<!-- Summary -->
+<div class="grid grid-cols-3 gap-4 mb-6">
+  <% 
+    const totalDebt = debts.reduce((s,d) => s + d.amount, 0);
+    const totalPaid = debts.reduce((s,d) => s + d.paid, 0);
+    const totalRemaining = debts.reduce((s,d) => s + d.remaining, 0);
+  %>
+  <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
+    <p class="text-xs text-slate-500 font-semibold">Total</p>
+    <p class="text-xl font-extrabold text-slate-800"><%= formatCurrency(totalDebt) %></p>
+  </div>
+  <div class="bg-green-50 rounded-2xl p-4 border border-green-200">
+    <p class="text-xs text-green-600 font-semibold">Dibayar</p>
+    <p class="text-xl font-extrabold text-green-700"><%= formatCurrency(totalPaid) %></p>
+  </div>
+  <div class="bg-red-50 rounded-2xl p-4 border border-red-200">
+    <p class="text-xs text-red-600 font-semibold">Sisa</p>
+    <p class="text-xl font-extrabold text-red-700"><%= formatCurrency(totalRemaining) %></p>
+  </div>
+</div>
+
+<!-- Debts List -->
+<div class="space-y-4">
+  <% if (debts.length === 0) { %>
+    <div class="bg-white rounded-2xl p-8 border border-slate-200 text-center text-slate-500">Belum ada data</div>
+  <% } %>
+  <% debts.forEach(d => { %>
+    <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+        <div>
+          <h3 class="font-bold text-slate-800"><%= d.party_name %></h3>
+          <p class="text-xs text-slate-500"><%= formatDate(d.created_at) %> | <span class="px-2 py-0.5 rounded-full text-xs font-bold <%= statusColor(d.status) %>"><%= d.status %></span></p>
+        </div>
+        <div class="text-right">
+          <p class="text-lg font-extrabold text-red-700"><%= formatCurrency(d.remaining) %></p>
+          <p class="text-xs text-slate-500">dari <%= formatCurrency(d.amount) %></p>
+        </div>
+      </div>
+      
+      <!-- Progress Bar -->
+      <div class="w-full bg-slate-200 rounded-full h-2 mb-3">
+        <div class="bg-green-500 h-2 rounded-full" style="width: <%= d.amount > 0 ? Math.round(d.paid / d.amount * 100) : 0 %>%"></div>
+      </div>
+
+      <!-- Payments History -->
+      <% if (d.payments && d.payments.length > 0) { %>
+        <div class="mb-3">
+          <p class="text-xs font-bold text-slate-600 mb-1">Riwayat Pembayaran:</p>
+          <div class="space-y-1">
+            <% d.payments.forEach(p => { %>
+              <div class="flex justify-between items-center text-xs p-2 bg-slate-50 rounded-lg">
+                <span class="text-slate-500"><%= formatDate(p.created_at) %></span>
+                <span class="font-bold text-green-700"><%= formatCurrency(p.amount) %></span>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+      <% } %>
+
+      <!-- Actions -->
+      <div class="flex gap-2">
+        <% if (d.status !== 'Lunas') { %>
+          <button onclick="payDebt(<%= d.id %>, '<%= d.party_name %>', <%= d.remaining %>)" class="px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs font-bold hover:bg-green-700">Bayar</button>
+        <% } %>
+        <form method="POST" action="/debts/<%= d.id %>/delete" onsubmit="return confirm('Yakin hapus?')" class="inline">
+          <button class="px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-bold hover:bg-red-700">Hapus</button>
+        </form>
+      </div>
+    </div>
+  <% }) %>
+</div>
+
+<!-- Add Debt Modal -->
+<div id="addDebtModal" class="modal-backdrop hidden">
+  <div class="modal-content p-6">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="font-bold text-lg">Tambah <%= debtType === 'payable' ? 'Utang' : 'Piutang' %></h3>
+      <button onclick="document.getElementById('addDebtModal').classList.add('hidden')" class="p-2 hover:bg-slate-100 rounded-lg"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    <form method="POST" action="/debts">
+      <input type="hidden" name="type" value="<%= debtType %>">
+      <div class="space-y-3">
+        <div><label class="block text-sm font-semibold mb-1">Nama Pihak *</label><input type="text" name="party_name" required class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm"></div>
+        <div><label class="block text-sm font-semibold mb-1">Jumlah *</label><input type="number" name="amount" required class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm"></div>
+        <div><label class="block text-sm font-semibold mb-1">Catatan</label><input type="text" name="notes" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm"></div>
+      </div>
+      <div class="mt-4 flex gap-3">
+        <button type="submit" class="px-6 py-2.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700">Simpan</button>
+        <button type="button" onclick="document.getElementById('addDebtModal').classList.add('hidden')" class="px-6 py-2.5 bg-slate-200 text-slate-700 rounded-xl font-bold">Batal</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Pay Modal -->
+<div id="payModal" class="modal-backdrop hidden">
+  <div class="modal-content p-6">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="font-bold text-lg">Pembayaran</h3>
+      <button onclick="document.getElementById('payModal').classList.add('hidden')" class="p-2 hover:bg-slate-100 rounded-lg"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    <p class="text-sm text-slate-500 mb-3">Bayar ke: <strong id="payPartyName"></strong></p>
+    <form method="POST" id="payForm">
+      <div class="space-y-3">
+        <div><label class="block text-sm font-semibold mb-1">Jumlah Bayar *</label><input type="number" name="amount" id="payAmount" required class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm"></div>
+        <div><label class="block text-sm font-semibold mb-1">Akun Kas</label>
+          <select name="cash_account_id" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm">
+            <option value="">-- Tidak Ada --</option>
+            <% cashAccounts.forEach(a => { %><option value="<%= a.id %>"><%= a.name %></option><% }) %>
+          </select>
+        </div>
+        <div><label class="block text-sm font-semibold mb-1">Catatan</label><input type="text" name="notes" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm"></div>
+      </div>
+      <div class="mt-4 flex gap-3">
+        <button type="submit" class="px-6 py-2.5 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700">Bayar</button>
+        <button type="button" onclick="document.getElementById('payModal').classList.add('hidden')" class="px-6 py-2.5 bg-slate-200 text-slate-700 rounded-xl font-bold">Batal</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function payDebt(id, name, remaining) {
+  document.getElementById('payForm').action = '/debts/' + id + '/pay';
+  document.getElementById('payPartyName').textContent = name;
+  document.getElementById('payAmount').max = remaining;
+  document.getElementById('payAmount').value = remaining;
+  document.getElementById('payModal').classList.remove('hidden');
+}
+</script>

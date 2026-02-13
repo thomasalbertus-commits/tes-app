@@ -1,0 +1,24 @@
+<% if (typeof pagination !== 'undefined' && pagination.totalPages > 1) { %>
+<div class="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 p-3 bg-white rounded-xl border border-slate-200">
+  <div class="text-sm text-slate-600">
+    Menampilkan <span class="font-semibold"><%= ((pagination.page - 1) * pagination.perPage) + 1 %></span>-<span class="font-semibold"><%= Math.min(pagination.page * pagination.perPage, pagination.total) %></span> dari <span class="font-semibold"><%= pagination.total %></span> data
+  </div>
+  <div class="flex items-center gap-2">
+    <% if (pagination.page > 1) { %>
+      <a href="?page=<%= pagination.page - 1 %><%= typeof queryString !== 'undefined' ? queryString : '' %>" class="px-3 py-2 rounded-lg bg-white border border-slate-300 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
+        <i data-lucide="chevron-left" class="w-4 h-4 inline"></i> Prev
+      </a>
+    <% } %>
+    
+    <span class="px-3 py-2 text-sm font-medium">
+      Halaman <span class="text-blue-600 font-bold"><%= pagination.page %></span> dari <span class="text-purple-600 font-bold"><%= pagination.totalPages %></span>
+    </span>
+    
+    <% if (pagination.page < pagination.totalPages) { %>
+      <a href="?page=<%= pagination.page + 1 %><%= typeof queryString !== 'undefined' ? queryString : '' %>" class="px-3 py-2 rounded-lg bg-white border border-slate-300 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
+        Next <i data-lucide="chevron-right" class="w-4 h-4 inline"></i>
+      </a>
+    <% } %>
+  </div>
+</div>
+<% } %>
